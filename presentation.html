@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IA + QA Automation con OpenClaw</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #58a6ff, #bc8cff);
+      transition: width 0.4s ease;
+      z-index: 100;
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 20px; right: 30px;
+      font-size: 14px;
+      color: #8b949e;
+      z-index: 100;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .nav button {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      padding: 10px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+
+    .nav button:hover { background: #58a6ff; border-color: #58a6ff; color: #0d1117; }
+
+    .slides { width: 100vw; height: 100vh; }
+
+    .slide {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      padding: 60px 80px;
+      flex-direction: column;
+      justify-content: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .slide.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Slide types ── */
+    .slide-title {
+      background: radial-gradient(ellipse at 30% 50%, #1a237e22 0%, #0d1117 70%);
+      align-items: center;
+      text-align: center;
+    }
+
+    .slide-content { background: #0d1117; }
+    .slide-dark    { background: #010409; }
+    .slide-accent  { background: radial-gradient(ellipse at 70% 30%, #58a6ff11 0%, #0d1117 70%); }
+
+    /* ── Typography ── */
+    .label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #58a6ff;
+      margin-bottom: 16px;
+    }
+
+    h1 { font-size: 52px; font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+    h2 { font-size: 36px; font-weight: 700; margin-bottom: 28px; color: #e6edf3; }
+    h3 { font-size: 22px; font-weight: 600; margin-bottom: 12px; color: #58a6ff; }
+
+    .subtitle { font-size: 20px; color: #8b949e; max-width: 700px; line-height: 1.6; }
+    .highlight { color: #58a6ff; }
+    .accent    { color: #bc8cff; }
+    .green     { color: #3fb950; }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      gap: 20px;
+    }
+    .cards-2 { grid-template-columns: 1fr 1fr; }
+    .cards-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .cards-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-icon { font-size: 32px; margin-bottom: 12px; }
+    .card h3   { font-size: 18px; margin-bottom: 8px; }
+    .card p    { font-size: 14px; color: #8b949e; line-height: 1.6; }
+
+    /* ── Flow ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .flow-step {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 16px 22px;
+      font-size: 15px;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .flow-step .icon { font-size: 24px; display: block; margin-bottom: 6px; }
+    .flow-arrow { font-size: 22px; color: #58a6ff; padding: 0 10px; }
+
+    /* ── Table ── */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th {
+      background: #161b22;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #8b949e;
+      border-bottom: 1px solid #30363d;
+    }
+    td {
+      padding: 14px 16px;
+      font-size: 15px;
+      border-bottom: 1px solid #21262d;
+      color: #e6edf3;
+    }
+    td:first-child { color: #58a6ff; font-weight: 600; }
+    tr:hover td { background: #161b22; }
+
+    /* ── Code ── */
+    .code-block {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #e6edf3;
+      margin: 16px 0;
+    }
+
+    .code-block .cmd  { color: #79c0ff; }
+    .code-block .str  { color: #a5d6ff; }
+    .code-block .cmt  { color: #8b949e; }
+    .code-block .ok   { color: #3fb950; }
+    .code-block .warn { color: #f0883e; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 3px;
+    }
+    .badge-blue   { background: #1f6feb33; color: #58a6ff; border: 1px solid #1f6feb; }
+    .badge-purple { background: #6e40c933; color: #bc8cff; border: 1px solid #6e40c9; }
+    .badge-green  { background: #1f6f2033; color: #3fb950; border: 1px solid #2ea043; }
+
+    /* ── List ── */
+    .check-list { list-style: none; }
+    .check-list li {
+      padding: 10px 0;
+      font-size: 17px;
+      color: #c9d1d9;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .check-list li span { color: #3fb950; font-size: 18px; }
+
+    /* ── Two col ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+
+    /* ── Quote ── */
+    .quote {
+      border-left: 4px solid #58a6ff;
+      padding: 16px 24px;
+      background: #161b22;
+      border-radius: 0 10px 10px 0;
+      font-size: 19px;
+      font-style: italic;
+      color: #c9d1d9;
+      margin: 20px 0;
+    }
+
+    /* ── Tag line ── */
+    .tagline {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: Título -->
+  <div class="slide slide-title active">
+    <div class="label">Demostración Técnica — 2026</div>
+    <h1>IA + QA Automation<br><span class="highlight">con OpenClaw</span></h1>
+    <p class="subtitle">De una frase en lenguaje natural a tests E2E corriendo,<br>issues en GitHub y notificaciones en Slack — automáticamente.</p>
+    <div class="tagline">
+      <span class="badge badge-blue">OpenClaw</span>
+      <span class="badge badge-purple">Playwright</span>
+      <span class="badge badge-green">GitHub</span>
+      <span class="badge badge-blue">Slack</span>
+      <span class="badge badge-purple">GPT-4o</span>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Agenda -->
+  <div class="slide slide-content">
+    <div class="label">Contenido</div>
+    <h2>¿Qué veremos hoy?</h2>
+    <div class="cards cards-2">
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>¿Qué es OpenClaw?</h3>
+        <p>El agente de IA que vive en tu terminal y entiende lenguaje natural.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Instalación y Setup</h3>
+        <p>Cómo instalarlo, configurarlo y dejarlo listo en minutos.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <h3>Skill de QA con Playwright</h3>
+        <p>Tests E2E automatizados que se corren con una frase.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3>Integraciones</h3>
+        <p>GitHub Issues + Slack automáticos cuando algo falla.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: ¿Qué es OpenClaw? -->
+  <div class="slide slide-accent">
+    <div class="label">Fundamentos</div>
+    <h2>¿Qué es <span class="highlight">OpenClaw</span>?</h2>
+    <div class="quote">
+      Un agente de IA local que vive en tu terminal, entiende lenguaje natural y ejecuta acciones reales en tu máquina mediante skills personalizables.
+    </div>
+    <div class="cards cards-3" style="margin-top:28px">
+      <div class="card">
+        <div class="card-icon">💻</div>
+        <h3>100% Local</h3>
+        <p>Corre en tu máquina. Sin servidores externos. Sin latencia de nube.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗣️</div>
+        <h3>Lenguaje Natural</h3>
+        <p>Hablas con él en español o inglés. Él entiende la intención y actúa.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧩</div>
+        <h3>Skills = Superpoderes</h3>
+        <p>Cada skill es una habilidad que le enseñas. Tú defines qué puede hacer.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Diferenciadores -->
+  <div class="slide slide-dark">
+    <div class="label">¿Por qué OpenClaw?</div>
+    <h2>Lo que lo hace diferente</h2>
+    <table>
+      <tr>
+        <th>Característica</th>
+        <th>OpenClaw</th>
+        <th>Script tradicional</th>
+        <th>CI/CD cloud</th>
+      </tr>
+      <tr><td>Lenguaje natural</td><td class="green">✅ Sí</td><td>❌ No</td><td>❌ No</td></tr>
+      <tr><td>Corre local</td><td class="green">✅ Sí</td><td>✅ Sí</td><td>❌ No</td></tr>
+      <tr><td>Skills personalizables</td><td class="green">✅ Sí</td><td>⚠️ Limitado</td><td>⚠️ Limitado</td></tr>
+      <tr><td>Sin setup complejo</td><td class="green">✅ Sí</td><td>✅ Sí</td><td>❌ No</td></tr>
+      <tr><td>Integraciones IA</td><td class="green">✅ GPT-4o</td><td>❌ No</td><td>⚠️ Parcial</td></tr>
+    </table>
+  </div>
+
+  <!-- SLIDE 5: Instalación -->
+  <div class="slide slide-content">
+    <div class="label">Paso 1</div>
+    <h2>Instalación de OpenClaw</h2>
+    <div class="two-col">
+      <div>
+        <div class="code-block">
+          <span class="cmt"># Instalar Node.js v24 con nvm</span><br>
+          <span class="cmd">nvm install 24</span><br>
+          <span class="cmd">nvm use 24</span><br><br>
+          <span class="cmt"># Instalar OpenClaw globalmente</span><br>
+          <span class="cmd">npm install -g openclaw</span><br><br>
+          <span class="cmt"># Iniciar la interfaz</span><br>
+          <span class="cmd">openclaw</span><br><br>
+          <span class="ok">✓ OpenClaw TUI iniciado</span><br>
+          <span class="ok">✓ Conectado a GitHub Copilot GPT-4o</span>
+        </div>
+      </div>
+      <div>
+        <ul class="check-list">
+          <li><span>✅</span> Instalación con un solo comando npm</li>
+          <li><span>✅</span> TUI interactiva en la terminal</li>
+          <li><span>✅</span> Motor GPT-4o vía GitHub Copilot</li>
+          <li><span>✅</span> Sesiones persistentes con tmux</li>
+          <li><span>✅</span> Skills instalados en node_modules</li>
+          <li><span>✅</span> Funciona en macOS y Linux</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Skill Playwright -->
+  <div class="slide slide-accent">
+    <div class="label">Skill 1 de 3</div>
+    <h2>🎭 Skill: Playwright QA</h2>
+    <div class="two-col">
+      <div>
+        <h3>¿Cómo se crea?</h3>
+        <div class="code-block">
+          <span class="cmt"># En OpenClaw TUI escribes:</span><br>
+          <span class="str">"create a new skill called playwright-qa.<br>
+          When I say 'corre los tests de QA',<br>
+          run npx playwright test --headed<br>
+          inside ~/openclaw-qa"</span>
+        </div>
+        <h3 style="margin-top:20px">¿Cómo se usa?</h3>
+        <div class="code-block">
+          <span class="str">"corre los tests de QA"</span><br>
+          <span class="str">"run QA tests"</span>
+        </div>
+      </div>
+      <div>
+        <ul class="check-list">
+          <li><span>🖥️</span> Browser Chromium se abre visible</li>
+          <li><span>🧪</span> Tests E2E corren en pantalla</li>
+          <li><span>📊</span> Reporte en terminal al finalizar</li>
+          <li><span>⚡</span> Flag <code style="color:#58a6ff">--headed</code> para verlo en vivo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Skill GitHub -->
+  <div class="slide slide-content">
+    <div class="label">Skill 2 de 3</div>
+    <h2>🐙 Skill: GitHub Issues Automáticos</h2>
+    <div class="quote">
+      Cuando un test falla, OpenClaw captura el error y crea un issue en GitHub automáticamente — sin intervención humana.
+    </div>
+    <div class="cards cards-3" style="margin-top:24px">
+      <div class="card">
+        <div class="card-icon">💥</div>
+        <h3>Test falla</h3>
+        <p>Playwright detecta el assertion error y captura el stack trace completo.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <h3>Issue creado</h3>
+        <p>GitHub CLI crea el issue con título, descripción y detalles del error en <code style="color:#58a6ff">patoxav/openclaw-qa</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>Trazabilidad total</h3>
+        <p>Cada fallo queda documentado, asignado y con historial en GitHub.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Skill Slack -->
+  <div class="slide slide-dark">
+    <div class="label">Skill 3 de 3</div>
+    <h2>💬 Skill: Notificación en Slack</h2>
+    <div class="two-col">
+      <div>
+        <div class="code-block">
+          <span class="cmt"># Script notify-slack.sh</span><br>
+          <span class="cmd">WEBHOOK_URL=</span><span class="str">"https://hooks.slack.com/..."</span><br>
+          <span class="cmd">CHANNEL=</span><span class="str">"#nuevo-canal"</span><br><br>
+          <span class="cmd">payload</span>=$(jq -n \<br>
+          &nbsp;&nbsp;--arg text <span class="str">"$MESSAGE"</span> \<br>
+          &nbsp;&nbsp;<span class="str">'{text: $text}'</span>)<br><br>
+          <span class="cmd">curl</span> -X POST \<br>
+          &nbsp;&nbsp;-H <span class="str">'Content-type: application/json'</span> \<br>
+          &nbsp;&nbsp;--data <span class="str">"$payload"</span> \<br>
+          &nbsp;&nbsp;<span class="str">"$WEBHOOK_URL"</span><br><br>
+          <span class="ok">✓ Mensaje enviado a #nuevo-canal</span>
+        </div>
+      </div>
+      <div>
+        <h3>Setup en 5 pasos</h3>
+        <ul class="check-list">
+          <li><span>1️⃣</span> Crear workspace en Slack</li>
+          <li><span>2️⃣</span> Crear app "OpenClaw QA" en api.slack.com</li>
+          <li><span>3️⃣</span> Activar Incoming Webhooks</li>
+          <li><span>4️⃣</span> Agregar webhook al canal</li>
+          <li><span>5️⃣</span> Configurar skill en OpenClaw</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Flujo completo -->
+  <div class="slide slide-accent">
+    <div class="label">El resultado</div>
+    <h2>Flujo Completo de Automatización</h2>
+    <div class="flow" style="justify-content:center; margin: 30px 0;">
+      <div class="flow-step">
+        <span class="icon">👤</span>
+        "corre los<br>tests de QA"
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="icon">🤖</span>
+        OpenClaw<br>procesa
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="icon">🖥️</span>
+        Playwright<br>ejecuta
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:#f0883e">
+        <span class="icon">💥</span>
+        Test<br>falla
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:#3fb950">
+        <span class="icon">🐙</span>
+        Issue en<br>GitHub
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:#bc8cff">
+        <span class="icon">📨</span>
+        Alerta en<br>Slack
+      </div>
+    </div>
+    <div class="cards cards-3">
+      <div class="card">
+        <p style="color:#3fb950; font-size:13px; font-weight:700; margin-bottom:8px">TIEMPO DE RESPUESTA</p>
+        <p style="font-size:28px; font-weight:800; color:#e6edf3">~10 seg</p>
+        <p style="color:#8b949e; font-size:13px">De comando a notificación</p>
+      </div>
+      <div class="card">
+        <p style="color:#58a6ff; font-size:13px; font-weight:700; margin-bottom:8px">INTERVENCIÓN HUMANA</p>
+        <p style="font-size:28px; font-weight:800; color:#e6edf3">0%</p>
+        <p style="color:#8b949e; font-size:13px">Todo es automático</p>
+      </div>
+      <div class="card">
+        <p style="color:#bc8cff; font-size:13px; font-weight:700; margin-bottom:8px">LÍNEAS DE CÓDIGO</p>
+        <p style="font-size:28px; font-weight:800; color:#e6edf3">1 frase</p>
+        <p style="color:#8b949e; font-size:13px">Para disparar todo</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: Stack -->
+  <div class="slide slide-content">
+    <div class="label">Tecnología</div>
+    <h2>Stack Tecnológico</h2>
+    <table>
+      <tr>
+        <th>Herramienta</th>
+        <th>Rol</th>
+        <th>¿Por qué?</th>
+      </tr>
+      <tr>
+        <td>🤖 OpenClaw</td>
+        <td>Agente IA local (orquestador)</td>
+        <td>Interpreta lenguaje natural y ejecuta skills</td>
+      </tr>
+      <tr>
+        <td>🎭 Playwright</td>
+        <td>Framework de tests E2E</td>
+        <td>Tests confiables, multi-browser, con UI visible</td>
+      </tr>
+      <tr>
+        <td>🐙 GitHub CLI</td>
+        <td>Creación de issues automáticos</td>
+        <td>Integración nativa con GitHub sin API compleja</td>
+      </tr>
+      <tr>
+        <td>💬 Slack Webhooks</td>
+        <td>Notificaciones en tiempo real</td>
+        <td>Fácil de configurar, llega a todo el equipo</td>
+      </tr>
+      <tr>
+        <td>⚡ GPT-4o</td>
+        <td>Motor de lenguaje natural</td>
+        <td>Entiende intención, contexto y genera acciones</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SLIDE 11: Próximos pasos -->
+  <div class="slide slide-dark">
+    <div class="label">Roadmap</div>
+    <h2>¿Qué más se puede hacer?</h2>
+    <div class="cards cards-2">
+      <div class="card">
+        <div class="card-icon">📸</div>
+        <h3>Screenshots automáticos</h3>
+        <p>Playwright captura una imagen del browser en el momento exacto del fallo. Se adjunta al issue de GitHub automáticamente.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>GitHub Actions</h3>
+        <p>Tests corren en cada push al repo, sin necesitar tu Mac encendida. CI/CD completo en la nube.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Reporte HTML de Playwright</h3>
+        <p>Dashboard visual con resultados, tiempos, videos y capturas de cada test run.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Análisis IA del error</h3>
+        <p>OpenClaw analiza el stack trace y sugiere un fix directamente en el issue de GitHub.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: Demo -->
+  <div class="slide slide-accent">
+    <div class="label">En vivo</div>
+    <h2>🎬 Demo en Vivo</h2>
+    <div class="quote">
+      "corre los tests de QA"
+    </div>
+    <div class="cards cards-3" style="margin-top:28px">
+      <div class="card">
+        <div class="card-icon">1️⃣</div>
+        <h3>OpenClaw recibe el comando</h3>
+        <p>GPT-4o interpreta la frase y activa el skill <code style="color:#58a6ff">playwright-qa</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">2️⃣</div>
+        <h3>Browser se abre en pantalla</h3>
+        <p>Chromium visible corriendo los tests E2E en tiempo real.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">3️⃣</div>
+        <h3>Resultado automático</h3>
+        <p>Issue en GitHub + mensaje en Slack #nuevo-canal sin tocar nada más.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: Conclusión -->
+  <div class="slide slide-title">
+    <div class="label">Conclusión</div>
+    <h1>Una frase.<br><span class="highlight">Todo automatizado.</span></h1>
+    <p class="subtitle" style="margin-top: 20px; margin-bottom: 30px;">
+      Sin CI/CD complejo. Sin configuración pesada.<br>
+      Solo IA + skills + lenguaje natural.
+    </p>
+    <div class="cards cards-3" style="max-width: 800px;">
+      <div class="card" style="text-align:center">
+        <div class="card-icon">✅</div>
+        <h3>Tests E2E</h3>
+        <p>Playwright corriendo</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-icon">🐙</div>
+        <h3>GitHub Issues</h3>
+        <p>Bugs reportados</p>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-icon">📨</div>
+        <h3>Slack Alerts</h3>
+        <p>Equipo notificado</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button onclick="changeSlide(-1)">← Anterior</button>
+  <button onclick="changeSlide(1)">Siguiente →</button>
+</div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+
+  function update() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function changeSlide(dir) {
+    current = Math.max(0, Math.min(total - 1, current + dir));
+    update();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+
+  update();
+</script>
+</body>
+</html>
