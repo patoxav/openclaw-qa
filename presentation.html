@@ -73,7 +73,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Slide types ── */
     .slide-title {
       background: radial-gradient(ellipse at 30% 50%, #1a237e22 0%, #0d1117 70%);
       align-items: center;
@@ -83,8 +82,8 @@
     .slide-content { background: #0d1117; }
     .slide-dark    { background: #010409; }
     .slide-accent  { background: radial-gradient(ellipse at 70% 30%, #58a6ff11 0%, #0d1117 70%); }
+    .slide-vision  { background: radial-gradient(ellipse at 50% 50%, #6e40c922 0%, #010409 70%); }
 
-    /* ── Typography ── */
     .label {
       font-size: 12px;
       font-weight: 700;
@@ -103,11 +102,7 @@
     .accent    { color: #bc8cff; }
     .green     { color: #3fb950; }
 
-    /* ── Cards ── */
-    .cards {
-      display: grid;
-      gap: 20px;
-    }
+    .cards { display: grid; gap: 20px; }
     .cards-2 { grid-template-columns: 1fr 1fr; }
     .cards-3 { grid-template-columns: 1fr 1fr 1fr; }
     .cards-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
@@ -123,7 +118,11 @@
     .card h3   { font-size: 18px; margin-bottom: 8px; }
     .card p    { font-size: 14px; color: #8b949e; line-height: 1.6; }
 
-    /* ── Flow ── */
+    .card-purple { border-color: #6e40c9; background: #6e40c911; }
+    .card-blue   { border-color: #1f6feb; background: #1f6feb11; }
+    .card-green  { border-color: #2ea043; background: #2ea04311; }
+    .card-orange { border-color: #f0883e; background: #f0883e11; }
+
     .flow {
       display: flex;
       align-items: center;
@@ -145,7 +144,6 @@
     .flow-step .icon { font-size: 24px; display: block; margin-bottom: 6px; }
     .flow-arrow { font-size: 22px; color: #58a6ff; padding: 0 10px; }
 
-    /* ── Table ── */
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th {
       background: #161b22;
@@ -166,7 +164,6 @@
     td:first-child { color: #58a6ff; font-weight: 600; }
     tr:hover td { background: #161b22; }
 
-    /* ── Code ── */
     .code-block {
       background: #161b22;
       border: 1px solid #30363d;
@@ -185,7 +182,6 @@
     .code-block .ok   { color: #3fb950; }
     .code-block .warn { color: #f0883e; }
 
-    /* ── Badge ── */
     .badge {
       display: inline-block;
       padding: 4px 12px;
@@ -197,8 +193,8 @@
     .badge-blue   { background: #1f6feb33; color: #58a6ff; border: 1px solid #1f6feb; }
     .badge-purple { background: #6e40c933; color: #bc8cff; border: 1px solid #6e40c9; }
     .badge-green  { background: #1f6f2033; color: #3fb950; border: 1px solid #2ea043; }
+    .badge-orange { background: #f0883e33; color: #f0883e; border: 1px solid #f0883e; }
 
-    /* ── List ── */
     .check-list { list-style: none; }
     .check-list li {
       padding: 10px 0;
@@ -211,10 +207,8 @@
     }
     .check-list li span { color: #3fb950; font-size: 18px; }
 
-    /* ── Two col ── */
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
 
-    /* ── Quote ── */
     .quote {
       border-left: 4px solid #58a6ff;
       padding: 16px 24px;
@@ -226,12 +220,60 @@
       margin: 20px 0;
     }
 
-    /* ── Tag line ── */
+    .quote-purple {
+      border-left: 4px solid #bc8cff;
+      padding: 16px 24px;
+      background: #6e40c911;
+      border-radius: 0 10px 10px 0;
+      font-size: 19px;
+      font-style: italic;
+      color: #c9d1d9;
+      margin: 20px 0;
+    }
+
     .tagline {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 20px;
+    }
+
+    .persona-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .persona {
+      flex: 1;
+      min-width: 180px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .persona .role {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
+
+    .persona .message {
+      font-size: 15px;
+      color: #e6edf3;
+      font-style: italic;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .persona .result {
+      font-size: 13px;
+      color: #3fb950;
     }
   </style>
 </head>
@@ -542,7 +584,7 @@
     </table>
   </div>
 
-  <!-- SLIDE 11: Próximos pasos -->
+  <!-- SLIDE 11: Roadmap -->
   <div class="slide slide-dark">
     <div class="label">Roadmap</div>
     <h2>¿Qué más se puede hacer?</h2>
@@ -620,6 +662,44 @@
         <h3>Slack Alerts</h3>
         <p>Equipo notificado</p>
       </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: Próximos Pasos — Mesa de Servicios de Pruebas -->
+  <div class="slide slide-vision">
+    <div class="label">Visión de Futuro</div>
+    <h2>🚀 Próximos Pasos: <span class="accent">Mesa de Servicios de Pruebas</span></h2>
+    <div class="quote-purple">
+      Imagina un agente de IA disponible en <strong>Microsoft Teams</strong> al que cualquier miembro del equipo le pide lo que necesita — en lenguaje natural — y él lo hace.
+    </div>
+    <div class="persona-row">
+      <div class="persona">
+        <div class="role">👨‍💻 Desarrollador</div>
+        <div class="message">"Corre el smoke test del módulo de pagos"</div>
+        <div class="result">→ Tests corren, resultado en 30 seg en el chat</div>
+      </div>
+      <div class="persona">
+        <div class="role">📋 Product Owner</div>
+        <div class="message">"Dame el dashboard de avance de pruebas de este sprint"</div>
+        <div class="result">→ Reporte con % de cobertura, tests pasados y fallidos</div>
+      </div>
+      <div class="persona">
+        <div class="role">🔍 QA Engineer</div>
+        <div class="message">"¿Cuáles tests fallaron ayer?"</div>
+        <div class="result">→ Lista con links a los issues de GitHub abiertos</div>
+      </div>
+      <div class="persona">
+        <div class="role">🏢 Manager</div>
+        <div class="message">"¿Estamos listos para el release?"</div>
+        <div class="result">→ Resumen ejecutivo: verde / amarillo / rojo</div>
+      </div>
+    </div>
+    <div class="tagline" style="margin-top: 20px;">
+      <span class="badge badge-purple">MS Teams Bot</span>
+      <span class="badge badge-blue">OpenClaw Agent</span>
+      <span class="badge badge-green">Playwright</span>
+      <span class="badge badge-orange">Dashboard IA</span>
+      <span class="badge badge-purple">GPT-4o</span>
     </div>
   </div>
 
