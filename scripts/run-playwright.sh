@@ -1,8 +1,7 @@
-cat > ~/openclaw-qa/scripts/run-playwright.sh << 'EOF'
 #!/bin/bash
 
 REPO_DIR=~/openclaw-qa
-SLACK_SCRIPT=$(find ~/.nvm/versions/node -name "notify-slack.sh" 2>/dev/null | head -1)
+SLACK_SCRIPT="/Users/xavier/.nvm/versions/node/v24.14.1/lib/node_modules/openclaw/skills/slack-integration/scripts/notify-slack.sh"
 
 cd "$REPO_DIR"
 
@@ -19,7 +18,7 @@ if [ $EXIT_CODE -ne 0 ]; then
 
   ISSUE_URL=$(gh issue list --repo patoxav/openclaw-qa --state open --limit 1 --json url --jq '.[0].url' 2>/dev/null || echo "")
 
-  if [ -n "$SLACK_SCRIPT" ] && [ -f "$SLACK_SCRIPT" ]; then
+  if [ -f "$SLACK_SCRIPT" ]; then
     bash "$SLACK_SCRIPT" "❌ QA Tests fallaron en openclaw-qa. Issue: $ISSUE_URL"
     echo "📨 Notificación enviada a Slack"
   else
@@ -30,4 +29,3 @@ if [ $EXIT_CODE -ne 0 ]; then
 else
   echo "✅ Todos los tests pasaron correctamente"
 fi
-EOF
