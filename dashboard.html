@@ -733,6 +733,11 @@
       return `Última ejecución: ${run.date} · ${utcTime}`;
     }
 
+    function formatShortDateLabel(dateText) {
+      const [day = '', month = ''] = String(dateText || '').split(' ');
+      return `${day} ${month}`.trim();
+    }
+
     function updateCountdownDisplay(value) {
       document.getElementById('countdownDisplay').textContent = `🔄 Actualizando en: ${value}s`;
     }
@@ -839,10 +844,11 @@
       const padding = 32;
       const chartWidth = width - padding * 2;
       const chartHeight = height - padding * 2;
+      const step = data.length === 1 ? 0 : chartWidth / (data.length - 1);
       const points = data.map((run, index) => {
-        const x = padding + (chartWidth / Math.max(data.length - 1, 1)) * index;
+        const x = data.length === 1 ? width / 2 : padding + step * index;
         const y = padding + chartHeight - (run.passRate / 100) * chartHeight;
-        return { x, y, label: run.date.replace(' 2026', ''), value: run.passRate };
+        return { x, y, label: formatShortDateLabel(run.date), value: run.passRate };
       });
       const polyline = points.map((point) => `${point.x},${point.y}`).join(' ');
       const area = `${padding},${height - padding} ${polyline} ${width - padding},${height - padding}`;
@@ -889,7 +895,7 @@
       trendChart = new Chart(context, {
         type: 'line',
         data: {
-          labels: data.map((run) => run.date.replace(' 2026', '')),
+          labels: data.map((run) => formatShortDateLabel(run.date)),
           datasets: [
             {
               label: 'Pass Rate',
