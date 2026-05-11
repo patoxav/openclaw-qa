@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const { randomUUID } = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -52,7 +53,7 @@ class GitHubIssueReporter {
     }
 
     history.push({
-      id: `run-${Date.now()}`,
+      id: `run-${Date.now()}-${randomUUID()}`,
       timestamp: new Date().toISOString(),
       total: this.total,
       passed: this.passed,

@@ -140,6 +140,8 @@
   </div>
 
   <script>
+    const REFRESH_INTERVAL_MS = 5000;
+
     function getExecutiveStatus(run) {
       if (!run) return { text: 'SIN DATOS', color: '#6e7781' };
       if (run.failed > 0) return { text: 'ROJO', color: '#cf222e' };
@@ -198,7 +200,7 @@
     }
 
     refresh();
-    setInterval(refresh, 5000);
+    setInterval(refresh, REFRESH_INTERVAL_MS);
   </script>
 </body>
 </html>
