@@ -9,6 +9,12 @@ class GitHubIssueReporter {
     this.total = 0;
     this.passed = 0;
     this.failed = 0;
+    this.skipped = 0;
+    this.startTime = Date.now();
+  }
+
+  onBegin() {
+    this.startTime = Date.now();
   }
 
   onTestEnd(test, result) {
@@ -22,10 +28,18 @@ class GitHubIssueReporter {
       });
     } else if (result.status === 'passed') {
       this.passed += 1;
+    } else if (result.status === 'skipped') {
+      this.skipped += 1;
     }
   }
 
   onEnd() {
+    const durationSec = ((Date.now() - this.startTime) / 1000).toFixed(1);
+    const passRate = this.total > 0 ? Math.round((this.passed / this.total) * 100) : 0;
+    const now = new Date();
+    const date = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    // Crear GitHub Issues por cada fallo (comportamiento original intacto)
     for (const failure of this.failures) {
       const title = `❌ Test fallido: ${failure.title}`;
       const body = `**Error:** ${failure.error}`;
@@ -37,6 +51,7 @@ class GitHubIssueReporter {
       }
     }
 
+    // Escribir qa-results.json con todos los campos que necesita el dashboard
     const qaResultsPath = path.resolve(__dirname, 'qa-results.json');
     let history = [];
 
@@ -54,13 +69,22 @@ class GitHubIssueReporter {
 
     history.push({
       id: `run-${Date.now()}-${randomUUID()}`,
-      timestamp: new Date().toISOString(),
+      timestamp: now.toISOString(),
+      date: date,
       total: this.total,
       passed: this.passed,
       failed: this.failed,
+      skipped: this.skipped,
+      passRate: passRate,
+      duration: parseFloat(durationSec),
       status: this.failed > 0 ? 'failed' : 'passed',
       failures: this.failures
     });
+
+    // Mantener solo los últimos 10 runs
+    if (history.length > 10) {
+      history = history.slice(history.length - 10);
+    }
 
     try {
       fs.writeFileSync(qaResultsPath, JSON.stringify(history, null, 2));
