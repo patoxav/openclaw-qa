@@ -665,6 +665,68 @@
     </div>
   </div>
 
+  <!-- SLIDE 14: Dashboard Ejecutivo QA -->
+  <div class="slide slide-accent">
+    <div class="label">Nuevo — Mayo 2026</div>
+    <h2>📊 Executive QA Dashboard</h2>
+    <div class="quote">
+      El gerente de calidad ahora tiene visibilidad en tiempo real: semáforo ejecutivo, KPIs, gráficas de tendencia y fallos — todo actualizado automáticamente cada 30 segundos.
+    </div>
+    <div class="cards cards-3" style="margin-top:24px">
+      <div class="card card-green">
+        <div class="card-icon">🚦</div>
+        <h3>Semáforo Ejecutivo</h3>
+        <p>Estado <span style="color:#3fb950">ESTABLE</span> / <span style="color:#f0883e">ATENCIÓN</span> / <span style="color:#f85149">CRÍTICO</span> basado en el Pass Rate del último run.</p>
+      </div>
+      <div class="card card-blue">
+        <div class="card-icon">📈</div>
+        <h3>KPIs + Gráficas</h3>
+        <p>Pass Rate %, tests pasados/fallidos, duración, donut chart de distribución y línea de tendencia histórica con Chart.js.</p>
+      </div>
+      <div class="card card-purple">
+        <div class="card-icon">🔄</div>
+        <h3>Auto-refresh 30s</h3>
+        <p>El dashboard se actualiza solo cada 30 segundos leyendo <code style="color:#bc8cff">qa-results.json</code> — sin recargar la página.</p>
+      </div>
+    </div>
+    <div style="margin-top:28px">
+      <h3>Flujo real — de Slack al Dashboard</h3>
+      <div class="flow" style="justify-content:center; margin-top:16px">
+        <div class="flow-step">
+          <span class="icon">💬</span>
+          Slack<br>"corre los tests"
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <span class="icon">🎭</span>
+          Playwright<br>ejecuta tests
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="border-color:#3fb950">
+          <span class="icon">📝</span>
+          reporter.js<br>escribe JSON
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="border-color:#58a6ff">
+          <span class="icon">📊</span>
+          Dashboard<br>se actualiza
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" style="border-color:#bc8cff">
+          <span class="icon">👔</span>
+          Gerente<br>ve resultado
+        </div>
+      </div>
+    </div>
+    <div class="tagline" style="margin-top:20px">
+      <span class="badge badge-green">dashboard.html</span>
+      <span class="badge badge-blue">qa-results.json</span>
+      <span class="badge badge-purple">Chart.js</span>
+      <span class="badge badge-orange">Auto-refresh</span>
+      <span class="badge badge-blue">reporter.js</span>
+    </div>
+  </div>
+
   <!-- SLIDE 14: Próximos Pasos — Mesa de Servicios de Pruebas -->
   <div class="slide slide-vision">
     <div class="label">Visión de Futuro</div>
