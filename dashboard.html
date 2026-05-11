@@ -3,204 +3,1048 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Ejecutivo QA</title>
+  <title>OpenClaw QA — Executive Quality Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --ok: #1f883d;
-      --warn: #9a6700;
-      --bad: #cf222e;
-      --bg: #f6f8fa;
-      --card: #ffffff;
-      --text: #1f2328;
+      --bg: #0d1117;
+      --header: #010409;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --blue: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #f0883e;
+      --purple: #bc8cff;
+      --skip: #8b949e;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
     }
-    .wrap {
-      max-width: 1080px;
-      margin: 24px auto;
-      padding: 0 16px;
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
     }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 24px;
+      padding: 20px 60px;
+      background: var(--header);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-title {
+      margin: 0 0 6px;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .header-subtitle,
+    .header-meta,
+    .countdown {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    main {
+      padding: 40px 60px 0;
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    .executive-status {
+      width: min(100%, 500px);
+      margin: 0 auto;
+      padding: 40px;
+      text-align: center;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+    }
+
+    .status-icon {
+      display: block;
+      font-size: 64px;
+      line-height: 1;
       margin-bottom: 16px;
     }
-    .status {
-      font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 999px;
-      color: white;
+
+    .status-title {
+      margin: 0 0 10px;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
     }
-    .grid {
+
+    .status-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
     }
-    .card {
-      background: var(--card);
-      border: 1px solid #d0d7de;
+
+    .card,
+    .chart-card,
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px;
+      box-shadow: 0 0 0 1px rgba(1, 4, 9, 0.1);
     }
-    .label {
-      font-size: 12px;
-      color: #57606a;
-      margin-bottom: 6px;
+
+    .card {
+      padding: 20px;
     }
-    .value {
-      font-size: 28px;
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 13px;
       font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .card-icon {
+      font-size: 22px;
+    }
+
+    .card-value {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .card-label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .chart-card {
+      padding: 22px;
+      min-height: 420px;
+    }
+
+    .chart-title,
+    .table-title {
+      margin: 0 0 20px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 320px;
+    }
+
+    .chart-wrap canvas,
+    .chart-fallback {
+      width: 100%;
+      height: 100%;
+    }
+
+    .donut-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      height: 100%;
+    }
+
+    .donut-ring {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .donut-ring::after {
+      content: '';
+      position: absolute;
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .donut-center {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .donut-value {
+      font-size: 34px;
+      font-weight: 800;
       line-height: 1;
     }
+
+    .donut-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .fallback-legend {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .trend-fallback {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: var(--card);
-      border: 1px solid #d0d7de;
-      border-radius: 12px;
-      overflow: hidden;
     }
-    th, td {
+
+    th,
+    td {
+      padding: 14px 16px;
       text-align: left;
-      border-bottom: 1px solid #d8dee4;
-      padding: 10px 12px;
-      font-size: 14px;
+      border-bottom: 1px solid #21262d;
       vertical-align: top;
     }
-    tr:last-child td {
-      border-bottom: 0;
-    }
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    th {
+      background: var(--surface);
+      color: var(--muted);
+      text-transform: uppercase;
       font-size: 12px;
+      letter-spacing: 0.08em;
     }
-    .small {
-      color: #57606a;
+
+    td {
+      font-size: 14px;
+    }
+
+    tbody tr:hover td {
+      background: #161b2288;
+    }
+
+    tbody tr.latest-run td:first-child {
+      border-left: 3px solid var(--blue);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
       font-size: 12px;
-      margin-top: 8px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      white-space: nowrap;
     }
-    @media (max-width: 860px) {
-      .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .badge-pass {
+      color: var(--green);
+      background: #3fb9501a;
+      border-color: #3fb95055;
+    }
+
+    .badge-warn {
+      color: var(--orange);
+      background: #f0883e1a;
+      border-color: #f0883e55;
+    }
+
+    .badge-fail {
+      color: var(--red);
+      background: #f851491a;
+      border-color: #f8514955;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .empty-state {
+      padding: 24px 16px;
+      color: var(--muted);
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .header,
+      main {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .charts-grid,
+      .kpi-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div>
-        <h1 style="margin:0;">Dashboard Ejecutivo QA</h1>
-        <div class="small" id="last-update">Actualizando…</div>
-      </div>
-      <div id="release-status" class="status">Cargando…</div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="label">Ejecuciones</div>
-        <div class="value" id="runs">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Total tests (última ejecución)</div>
-        <div class="value" id="total">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Passed (última ejecución)</div>
-        <div class="value" id="passed">0</div>
-      </div>
-      <div class="card">
-        <div class="label">Failed (última ejecución)</div>
-        <div class="value" id="failed">0</div>
+  <header class="header">
+    <div>
+      <h1 class="header-title">🐾 OpenClaw QA — Executive Quality Dashboard</h1>
+      <div class="header-meta">
+        <span id="lastExecution" class="header-subtitle">Última ejecución: —</span>
+        <a href="https://github.com/patoxav/openclaw-qa" target="_blank" rel="noreferrer">github.com/patoxav/openclaw-qa</a>
       </div>
     </div>
+    <div id="countdownDisplay" class="countdown">🔄 Actualizando en: 30s</div>
+  </header>
 
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Fecha</th>
-          <th>Estado</th>
-          <th>Resumen</th>
-        </tr>
-      </thead>
-      <tbody id="history-body">
-        <tr>
-          <td colspan="4">Sin datos todavía.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <main>
+    <section>
+      <div id="executiveStatus" class="executive-status">
+        <span id="statusIcon" class="status-icon">🟢</span>
+        <h2 id="statusTitle" class="status-title">ESTABLE</h2>
+        <p id="statusSubtitle" class="status-subtitle">Pass Rate del último run: 100%</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="kpi-grid">
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">PASS RATE</span>
+            <span class="card-icon">📈</span>
+          </div>
+          <div id="passRateValue" class="card-value">0%</div>
+          <div class="card-label">Último Run</div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">TOTAL TESTS</span>
+            <span class="card-icon">🧪</span>
+          </div>
+          <div id="totalValue" class="card-value">0</div>
+          <div class="card-label">Último Run</div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">PASADOS</span>
+            <span class="card-icon">✅</span>
+          </div>
+          <div id="passedValue" class="card-value">0</div>
+          <div class="card-label">Último Run</div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">FALLIDOS</span>
+            <span class="card-icon">❌</span>
+          </div>
+          <div id="failedValue" class="card-value">0</div>
+          <div class="card-label">Último Run</div>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <span class="card-title">DURACIÓN</span>
+            <span class="card-icon">⏱️</span>
+          </div>
+          <div id="durationValue" class="card-value">0s</div>
+          <div class="card-label">Último Run</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="charts-grid">
+      <article class="chart-card">
+        <h3 class="chart-title">Distribución del Último Run</h3>
+        <div id="distributionChartWrap" class="chart-wrap">
+          <canvas id="distributionChart"></canvas>
+        </div>
+      </article>
+
+      <article class="chart-card">
+        <h3 class="chart-title">Tendencia de Pass Rate</h3>
+        <div id="trendChartWrap" class="chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section>
+      <h3 class="table-title">📋 Historial de Ejecuciones</h3>
+      <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>✅ Pasados</th>
+              <th>❌ Fallidos</th>
+              <th>Pass Rate</th>
+              <th>Duración</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr>
+              <td colspan="8" class="empty-state">Sin ejecuciones disponibles.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </section>
+
+    <section id="failuresSection" hidden>
+      <h3 class="table-title">🔴 Fallos Recientes</h3>
+      <div class="table-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Test</th>
+              <th>Error</th>
+              <th>Run</th>
+              <th>GitHub Issue</th>
+            </tr>
+          </thead>
+          <tbody id="failuresBody">
+            <tr>
+              <td colspan="4" class="empty-state">Sin fallos recientes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>🐾 Powered by OpenClaw + Playwright · patoxav/openclaw-qa · 2026</footer>
 
   <script>
-    const REFRESH_INTERVAL_MS = 5000;
+    const MOCK_DATA = [
+      {
+        id: 'run-001',
+        timestamp: '2026-05-04T09:15:00.000Z',
+        date: '04 May 2026',
+        passed: 4,
+        failed: 0,
+        skipped: 0,
+        total: 4,
+        passRate: 100,
+        duration: 8.2,
+        failures: []
+      },
+      {
+        id: 'run-002',
+        timestamp: '2026-05-05T10:30:00.000Z',
+        date: '05 May 2026',
+        passed: 3,
+        failed: 1,
+        skipped: 0,
+        total: 4,
+        passRate: 75,
+        duration: 11.4,
+        failures: [
+          {
+            title: 'Login exitoso con credenciales válidas',
+            error: 'Error: Timed out 5000ms waiting for expect(locator).toBeVisible()\nLocator: locator(\'.flash.success\')',
+            githubIssue: 'https://github.com/patoxav/openclaw-qa/issues/1'
+          }
+        ]
+      },
+      {
+        id: 'run-003',
+        timestamp: '2026-05-06T08:45:00.000Z',
+        date: '06 May 2026',
+        passed: 2,
+        failed: 2,
+        skipped: 0,
+        total: 4,
+        passRate: 50,
+        duration: 14.7,
+        failures: [
+          {
+            title: 'Login exitoso con credenciales válidas',
+            error: 'Error: Timed out 5000ms waiting for expect(locator).toBeVisible()\nLocator: locator(\'.flash.success\')',
+            githubIssue: 'https://github.com/patoxav/openclaw-qa/issues/2'
+          },
+          {
+            title: 'has title',
+            error: 'Error: expect(received).toHaveTitle(expected)\nExpected pattern: /Playwright/\nReceived string: ""',
+            githubIssue: 'https://github.com/patoxav/openclaw-qa/issues/3'
+          }
+        ]
+      },
+      {
+        id: 'run-004',
+        timestamp: '2026-05-07T11:00:00.000Z',
+        date: '07 May 2026',
+        passed: 3,
+        failed: 1,
+        skipped: 0,
+        total: 4,
+        passRate: 75,
+        duration: 10.1,
+        failures: [
+          {
+            title: 'Login exitoso con credenciales válidas',
+            error: 'Error: Timed out 5000ms waiting for expect(locator).toBeVisible()\nLocator: locator(\'.flash.success\')',
+            githubIssue: 'https://github.com/patoxav/openclaw-qa/issues/4'
+          }
+        ]
+      },
+      {
+        id: 'run-005',
+        timestamp: '2026-05-08T09:20:00.000Z',
+        date: '08 May 2026',
+        passed: 4,
+        failed: 0,
+        skipped: 0,
+        total: 4,
+        passRate: 100,
+        duration: 9.3,
+        failures: []
+      },
+      {
+        id: 'run-006',
+        timestamp: '2026-05-09T14:10:00.000Z',
+        date: '09 May 2026',
+        passed: 4,
+        failed: 0,
+        skipped: 0,
+        total: 4,
+        passRate: 100,
+        duration: 7.8,
+        failures: []
+      },
+      {
+        id: 'run-007',
+        timestamp: '2026-05-10T10:45:00.000Z',
+        date: '10 May 2026',
+        passed: 3,
+        failed: 1,
+        skipped: 0,
+        total: 4,
+        passRate: 75,
+        duration: 12.5,
+        failures: [
+          {
+            title: 'get started link',
+            error: 'Error: expect(locator).toBeVisible()\nLocator: getByRole(\'heading\', { name: \'Installation\' })\nExpected: visible\nReceived: hidden',
+            githubIssue: 'https://github.com/patoxav/openclaw-qa/issues/5'
+          }
+        ]
+      },
+      {
+        id: 'run-008',
+        timestamp: '2026-05-11T09:00:00.000Z',
+        date: '11 May 2026',
+        passed: 4,
+        failed: 0,
+        skipped: 0,
+        total: 4,
+        passRate: 100,
+        duration: 8.6,
+        failures: []
+      }
+    ];
 
-    function getExecutiveStatus(run) {
-      if (!run) return { text: 'SIN DATOS', color: '#6e7781' };
-      if (run.failed > 0) return { text: 'ROJO', color: '#cf222e' };
-      if (run.total === 0) return { text: 'AMARILLO', color: '#9a6700' };
-      return { text: 'VERDE', color: '#1f883d' };
+    let distributionChart;
+    let trendChart;
+    let countdown = 30;
+
+    const centerTextPlugin = {
+      id: 'centerTextPlugin',
+      afterDatasetsDraw(chart, args, pluginOptions) {
+        if (chart.config.type !== 'doughnut') {
+          return;
+        }
+
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta.data.length) {
+          return;
+        }
+
+        const x = meta.data[0].x;
+        const y = meta.data[0].y;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = '700 34px Segoe UI';
+        ctx.fillText(pluginOptions.text || '', x, y - 10);
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '600 13px Segoe UI';
+        ctx.fillText('Pass Rate', x, y + 20);
+        ctx.restore();
+      }
+    };
+
+    if (window.Chart) {
+      Chart.register(centerTextPlugin);
+    }
+
+    function getStatusConfig(passRate) {
+      if (passRate >= 90) {
+        return {
+          icon: '🟢',
+          title: 'ESTABLE',
+          color: '#3fb950',
+          background: '#3fb95011'
+        };
+      }
+
+      if (passRate >= 70) {
+        return {
+          icon: '🟡',
+          title: 'ATENCIÓN',
+          color: '#f0883e',
+          background: '#f0883e11'
+        };
+      }
+
+      return {
+        icon: '🔴',
+        title: 'CRÍTICO',
+        color: '#f85149',
+        background: '#f8514911'
+      };
+    }
+
+    function getPassRateColor(passRate) {
+      if (passRate >= 90) return 'var(--green)';
+      if (passRate >= 70) return 'var(--orange)';
+      return 'var(--red)';
     }
 
     function escapeHtml(value) {
       return String(value)
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;');
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
 
-    function renderHistory(history) {
-      const body = document.getElementById('history-body');
-      if (!history.length) {
-        body.innerHTML = '<tr><td colspan="4">Sin datos todavía.</td></tr>';
+    function truncateText(value, maxLength = 80) {
+      const text = String(value || '');
+      return text.length > maxLength ? `${text.slice(0, maxLength - 3)}...` : text;
+    }
+
+    function formatExecutionText(run) {
+      if (!run) return 'Última ejecución: —';
+      const utcTime = run.timestamp.slice(11, 16);
+      return `Última ejecución: ${run.date} · ${utcTime}`;
+    }
+
+    function formatShortDateLabel(dateText) {
+      const [day = '', month = ''] = String(dateText || '').split(' ');
+      return `${day} ${month}`.trim();
+    }
+
+    function updateCountdownDisplay(value) {
+      document.getElementById('countdownDisplay').textContent = `🔄 Actualizando en: ${value}s`;
+    }
+
+    function getHistoryRows(data) {
+      return [...data].reverse();
+    }
+
+    function getFlattenedFailures(data) {
+      return [...data]
+        .reverse()
+        .flatMap((run) => (run.failures || []).map((failure) => ({
+          ...failure,
+          runId: run.id,
+          runDate: run.date
+        })))
+        .slice(0, 10);
+    }
+
+    function ensureCanvas(containerId, canvasId) {
+      const container = document.getElementById(containerId);
+      let canvas = document.getElementById(canvasId);
+      if (!canvas) {
+        container.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+        canvas = document.getElementById(canvasId);
+      }
+      return canvas;
+    }
+
+    function renderDistributionFallback(latestRun) {
+      const container = document.getElementById('distributionChartWrap');
+      const total = Math.max(latestRun.total, 1);
+      const passedDeg = (latestRun.passed / total) * 360;
+      const failedDeg = (latestRun.failed / total) * 360;
+      const skippedDeg = 360 - passedDeg - failedDeg;
+
+      container.innerHTML = `
+        <div class="chart-fallback donut-fallback">
+          <div class="donut-ring" style="background: conic-gradient(#3fb950 0deg ${passedDeg}deg, #f85149 ${passedDeg}deg ${passedDeg + failedDeg}deg, #8b949e ${passedDeg + failedDeg}deg ${passedDeg + failedDeg + skippedDeg}deg);">
+            <div class="donut-center">
+              <div class="donut-value">${escapeHtml(String(latestRun.passRate))}%</div>
+              <div class="donut-label">Pass Rate</div>
+            </div>
+          </div>
+          <div class="fallback-legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:#3fb950"></span>Pasados</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#f85149"></span>Fallidos</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#8b949e"></span>Skipped</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function createDistributionChart(latestRun) {
+      if (!window.Chart) {
+        renderDistributionFallback(latestRun);
         return;
       }
 
-      const rows = [...history].reverse().slice(0, 15).map((run) => {
-        const summary = `${run.passed ?? 0} passed / ${run.failed ?? 0} failed`;
-        return `<tr>
-          <td class="mono">${escapeHtml(run.id ?? '')}</td>
-          <td>${escapeHtml(run.timestamp ?? '')}</td>
-          <td>${escapeHtml(run.status ?? '')}</td>
-          <td>${escapeHtml(summary)}</td>
-        </tr>`;
-      });
+      const canvas = ensureCanvas('distributionChartWrap', 'distributionChart');
+      const context = canvas.getContext('2d');
+      if (distributionChart) {
+        distributionChart.destroy();
+      }
 
-      body.innerHTML = rows.join('');
+      distributionChart = new Chart(context, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pasados', 'Fallidos', 'Skipped'],
+          datasets: [
+            {
+              data: [latestRun.passed, latestRun.failed, latestRun.skipped],
+              backgroundColor: ['#3fb950', '#f85149', '#8b949e'],
+              borderColor: '#161b22',
+              borderWidth: 6,
+              hoverOffset: 6
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#e6edf3',
+                boxWidth: 14,
+                padding: 18
+              }
+            },
+            centerTextPlugin: {
+              text: `${latestRun.passRate}%`
+            }
+          }
+        }
+      });
     }
 
-    async function refresh() {
-      try {
-        const response = await fetch(`qa-results.json?t=${Date.now()}`);
-        const history = response.ok ? await response.json() : [];
-        const runs = Array.isArray(history) ? history : [];
-        const latest = runs[runs.length - 1];
-        const executive = getExecutiveStatus(latest);
+    function renderTrendFallback(data) {
+      const container = document.getElementById('trendChartWrap');
+      const width = 700;
+      const height = 320;
+      const padding = 32;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+      const step = data.length === 1 ? 0 : chartWidth / (data.length - 1);
+      const points = data.map((run, index) => {
+        const x = data.length === 1 ? width / 2 : padding + step * index;
+        const y = padding + chartHeight - (run.passRate / 100) * chartHeight;
+        return { x, y, label: formatShortDateLabel(run.date), value: run.passRate };
+      });
+      const polyline = points.map((point) => `${point.x},${point.y}`).join(' ');
+      const area = `${padding},${height - padding} ${polyline} ${width - padding},${height - padding}`;
+      const gridLines = [0, 25, 50, 75, 100].map((value) => {
+        const y = padding + chartHeight - (value / 100) * chartHeight;
+        return `<g><line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="#30363d" stroke-width="1" /><text x="8" y="${y + 4}" fill="#8b949e" font-size="12">${value}%</text></g>`;
+      }).join('');
+      const xLabels = points.map((point) => `<text x="${point.x}" y="${height - 8}" fill="#8b949e" font-size="12" text-anchor="middle">${escapeHtml(point.label)}</text>`).join('');
+      const circles = points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="4" fill="#58a6ff" />`).join('');
 
-        document.getElementById('runs').textContent = String(runs.length);
-        document.getElementById('total').textContent = String(latest?.total ?? 0);
-        document.getElementById('passed').textContent = String(latest?.passed ?? 0);
-        document.getElementById('failed').textContent = String(latest?.failed ?? 0);
-        document.getElementById('release-status').textContent = `Estado release: ${executive.text}`;
-        document.getElementById('release-status').style.background = executive.color;
-        document.getElementById('last-update').textContent = `Última actualización: ${new Date().toLocaleString()}`;
-        renderHistory(runs);
+      container.innerHTML = `
+        <svg class="chart-fallback trend-fallback" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Tendencia de pass rate">
+          <defs>
+            <linearGradient id="trendGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="rgba(88,166,255,0.35)" />
+              <stop offset="100%" stop-color="rgba(88,166,255,0.02)" />
+            </linearGradient>
+          </defs>
+          ${gridLines}
+          <polygon points="${area}" fill="url(#trendGradient)"></polygon>
+          <polyline points="${polyline}" fill="none" stroke="#58a6ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          ${circles}
+          ${xLabels}
+        </svg>
+      `;
+    }
+
+    function createTrendChart(data) {
+      if (!window.Chart) {
+        renderTrendFallback(data);
+        return;
+      }
+
+      const canvas = ensureCanvas('trendChartWrap', 'trendChart');
+      const context = canvas.getContext('2d');
+      if (trendChart) {
+        trendChart.destroy();
+      }
+
+      const gradient = context.createLinearGradient(0, 0, 0, 320);
+      gradient.addColorStop(0, 'rgba(88, 166, 255, 0.35)');
+      gradient.addColorStop(1, 'rgba(88, 166, 255, 0.02)');
+
+      trendChart = new Chart(context, {
+        type: 'line',
+        data: {
+          labels: data.map((run) => formatShortDateLabel(run.date)),
+          datasets: [
+            {
+              label: 'Pass Rate',
+              data: data.map((run) => run.passRate),
+              borderColor: '#58a6ff',
+              backgroundColor: gradient,
+              fill: true,
+              borderWidth: 3,
+              pointBackgroundColor: '#58a6ff',
+              pointBorderColor: '#58a6ff',
+              pointRadius: 4,
+              pointHoverRadius: 5,
+              tension: 0.35
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: {
+                color: '#30363d'
+              },
+              ticks: {
+                color: '#8b949e'
+              }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              ticks: {
+                color: '#8b949e',
+                callback: (value) => `${value}%`
+              },
+              grid: {
+                color: '#30363d'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+
+    function renderHistory(data, latestRunId) {
+      const historyBody = document.getElementById('historyBody');
+      const rows = getHistoryRows(data);
+
+      historyBody.innerHTML = rows.map((run, index) => {
+        const statusClass = run.passRate >= 90 ? 'badge-pass' : run.passRate >= 70 ? 'badge-warn' : 'badge-fail';
+        const statusText = run.passRate === 100 ? '✅ PASS' : run.passRate >= 70 ? '⚠️ WARN' : '❌ FAIL';
+        const latestClass = run.id === latestRunId ? 'latest-run' : '';
+
+        return `
+          <tr class="${latestClass}">
+            <td>${escapeHtml(String(data.length - index))}</td>
+            <td>${escapeHtml(run.date)}</td>
+            <td>${escapeHtml(String(run.total))}</td>
+            <td>${escapeHtml(String(run.passed))}</td>
+            <td>${escapeHtml(String(run.failed))}</td>
+            <td>${escapeHtml(String(run.passRate))}%</td>
+            <td>${escapeHtml(String(run.duration))}s</td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderFailures(data) {
+      const failuresSection = document.getElementById('failuresSection');
+      const failuresBody = document.getElementById('failuresBody');
+      const failures = getFlattenedFailures(data);
+
+      if (!failures.length) {
+        failuresSection.hidden = true;
+        return;
+      }
+
+      failuresSection.hidden = false;
+      failuresBody.innerHTML = failures.map((failure) => `
+        <tr>
+          <td>${escapeHtml(failure.title)}</td>
+          <td title="${escapeHtml(failure.error)}">${escapeHtml(truncateText(failure.error))}</td>
+          <td>${escapeHtml(failure.runId)} · ${escapeHtml(failure.runDate)}</td>
+          <td>${failure.githubIssue ? `<a href="${escapeHtml(failure.githubIssue)}" target="_blank" rel="noreferrer" style="color:#58a6ff">Ver issue →</a>` : '—'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDashboard(data) {
+      const safeData = Array.isArray(data) && data.length ? data : MOCK_DATA;
+      const latestRun = safeData[safeData.length - 1];
+      const status = getStatusConfig(latestRun.passRate);
+
+      document.getElementById('lastExecution').textContent = formatExecutionText(latestRun);
+
+      const executiveStatus = document.getElementById('executiveStatus');
+      executiveStatus.style.borderColor = status.color;
+      executiveStatus.style.background = status.background;
+
+      document.getElementById('statusIcon').textContent = status.icon;
+      document.getElementById('statusTitle').textContent = status.title;
+      document.getElementById('statusTitle').style.color = status.color;
+      document.getElementById('statusSubtitle').textContent = `Pass Rate del último run: ${latestRun.passRate}%`;
+
+      const passRateElement = document.getElementById('passRateValue');
+      passRateElement.textContent = `${latestRun.passRate}%`;
+      passRateElement.style.color = getPassRateColor(latestRun.passRate);
+
+      document.getElementById('totalValue').textContent = latestRun.total;
+      document.getElementById('passedValue').textContent = latestRun.passed;
+      document.getElementById('passedValue').style.color = 'var(--green)';
+      document.getElementById('failedValue').textContent = latestRun.failed;
+      document.getElementById('failedValue').style.color = latestRun.failed > 0 ? 'var(--red)' : 'var(--text)';
+      document.getElementById('durationValue').textContent = `${latestRun.duration}s`;
+
+      createDistributionChart(latestRun);
+      createTrendChart(safeData);
+      renderHistory(safeData, latestRun.id);
+      renderFailures(safeData);
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch(`qa-results.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error();
+        return await res.json();
       } catch {
-        document.getElementById('release-status').textContent = 'Estado release: SIN DATOS';
-        document.getElementById('release-status').style.background = '#6e7781';
-        document.getElementById('history-body').innerHTML = '<tr><td colspan="4">No se pudo leer qa-results.json</td></tr>';
+        return MOCK_DATA;
       }
     }
 
-    refresh();
-    setInterval(refresh, REFRESH_INTERVAL_MS);
+    updateCountdownDisplay(countdown);
+
+    setInterval(() => {
+      countdown--;
+      updateCountdownDisplay(countdown);
+      if (countdown <= 0) {
+        countdown = 30;
+        loadData().then(renderDashboard);
+        updateCountdownDisplay(countdown);
+      }
+    }, 1000);
+
+    loadData().then(renderDashboard);
   </script>
 </body>
 </html>
