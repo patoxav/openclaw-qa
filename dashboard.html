@@ -860,7 +860,7 @@
       const circles = points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="4" fill="#58a6ff" />`).join('');
 
       container.innerHTML = `
-        <svg class="chart-fallback trend-fallback" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Tendencia de pass rate">
+        <svg class="chart-fallback trend-fallback" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Tendencia de pass rate">
           <defs>
             <linearGradient id="trendGradient" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stop-color="rgba(88,166,255,0.35)" />
